@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Histórico da manutenção{% endblock %}
+
+{% block content %}
+
+<h1>Histórico da manutenção</h1>
+<p class="muted">{{ m.descricao }} — {{ m.condominio.nome }}</p>
+
+<div class="card">
+  <div class="row">
+    <div class="field">
+      <label>Status atual</label>
+      <div>
+        {% if m.status == "Vencida" %}
+          <span class="pill bad">Vencida</span>
+        {% elif m.status == "A vencer" %}
+          <span class="pill warn">A vencer</span>
+        {% else %}
+          <span class="pill ok">Em dia</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Última empresa</label>
+      <div>{{ m.empresa_ultima or '-' }}</div>
+    </div>
+
+    <div class="field">
+      <label>Telefone</label>
+      <div>{{ m.telefone_empresa or '-' }}</div>
+    </div>
+
+    <div class="field">
+      <label>Próximo vencimento</label>
+      <div>{{ m.data_vencimento.strftime('%d/%m/%Y') if m.data_vencimento else '-' }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Execuções registradas</h2>
+
+  <div class="table-wrap">
+    <table class="manut-table">
+      <thead>
+        <tr>
+          <th>Data da execução</th>
+          <th>Empresa</th>
+          <th>Telefone</th>
+          <th>Valor</th>
+          <th>Observação</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for h in historicos %}
+        <tr>
+          <td>{{ h.data_execucao.strftime('%d/%m/%Y') if h.data_execucao else '-' }}</td>
+          <td>{{ h.empresa or '-' }}</td>
+          <td>{{ h.telefone_empresa or '-' }}</td>
+          <td>
+            {% if h.valor_servico is not none %}
+              R$ {{ '%.2f'|format(h.valor_servico) }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>{{ h.observacao or '-' }}</td>
+        </tr>
+        {% endfor %}
+
+        {% if not historicos %}
+        <tr>
+          <td colspan="5" style="text-align:center; color:#6b7280;">
+            Nenhuma execução registrada.
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <br>
+  <a href="{{ url_for('ver_condominio', id=m.condominio_id) }}">← Voltar</a>
+</div>
+
+{% endblock %}

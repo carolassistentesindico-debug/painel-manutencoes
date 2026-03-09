@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Condomínios arquivados{% endblock %}
+
+{% block content %}
+
+<h1>Condomínios arquivados — {{ sindico.nome }}</h1>
+<p class="muted">Lista de condomínios que saíram da carteira deste síndico.</p>
+
+<div class="card">
+  <div class="card-title-row">
+    <h2>Arquivados</h2>
+
+    <a class="btn secondary"
+       href="{{ url_for('ver_sindico', id=sindico.id) }}">
+      Voltar para ativos
+    </a>
+  </div>
+
+  <div class="table-wrap">
+    <table class="dashboard-table">
+      <thead>
+        <tr>
+          <th>Condomínio</th>
+          <th>CNPJ</th>
+          <th>Endereço</th>
+          <th class="acoes-col">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in condominios %}
+        <tr>
+          <td><strong>{{ c.nome }}</strong></td>
+          <td>{{ c.cnpj or "-" }}</td>
+          <td>{{ c.endereco or "-" }}</td>
+          <td class="acoes-col">
+            <div class="acoes">
+              <form method="POST"
+                    action="{{ url_for('desarquivar_condominio', id=c.id) }}"
+                    style="display:inline; margin:0;"
+                    onsubmit="return confirm('Deseja desarquivar este condomínio?');">
+                <button type="submit"
+                        class="emoji-acao-btn"
+                        title="Desarquivar condomínio">📂</button>
+              </form>
+
+              <a class="emoji-acao"
+                 href="{{ url_for('editar_condominio', id=c.id) }}"
+                 title="Editar condomínio">✏️</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+
+        {% if not condominios %}
+        <tr>
+          <td colspan="4" style="text-align:center; color:#6b7280;">
+            Nenhum condomínio arquivado.
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<a href="{{ url_for('ver_sindico', id=sindico.id) }}">← Voltar</a>
+
+{% endblock %}

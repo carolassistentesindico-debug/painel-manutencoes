@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Condomínios{% endblock %}
+
+{% block content %}
+
+<h1>Condomínios — {{ sindico.nome }}</h1>
+<p class="muted">Lista de condomínios ativos vinculados a este síndico.</p>
+
+<div class="card">
+  <div class="card-title-row">
+    <h2>Condomínios ativos</h2>
+
+    <a class="btn-arquivados" href="{{ url_for('condominios_arquivados', id=sindico.id) }}">
+      Condomínios arquivados
+    </a>
+  </div>
+
+  <div class="table-wrap">
+    <table class="dashboard-table">
+      <thead>
+        <tr>
+          <th>Condomínio</th>
+          <th>CNPJ</th>
+          <th>Endereço</th>
+          <th class="num-col">Manutenções</th>
+          <th class="acoes-col">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in condominios %}
+        <tr>
+          <td><strong>{{ c.nome }}</strong></td>
+          <td>{{ c.cnpj or "-" }}</td>
+          <td>{{ c.endereco or "-" }}</td>
+          <td class="num-col">
+            <span class="pill neutral">{{ c.manutencoes|length }}</span>
+          </td>
+          <td class="acoes-col">
+            <div class="acoes">
+              <a class="emoji-acao"
+                 href="{{ url_for('ver_condominio', id=c.id) }}"
+                 title="Abrir condomínio">📂</a>
+
+              <a class="emoji-acao"
+                 href="{{ url_for('editar_condominio', id=c.id) }}"
+                 title="Editar condomínio">✏️</a>
+
+              <form method="POST"
+                    action="{{ url_for('arquivar_condominio', id=c.id) }}"
+                    style="display:inline; margin:0;"
+                    onsubmit="return confirm('Deseja arquivar este condomínio?');">
+                <button type="submit"
+                        class="emoji-acao-btn"
+                        title="Arquivar condomínio">🗄️</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+
+        {% if not condominios %}
+        <tr>
+          <td colspan="5" style="text-align:center; color:#6b7280;">
+            Nenhum condomínio ativo cadastrado.
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Novo condomínio</h2>
+
+  <form method="POST" action="{{ url_for('novo_condominio', sindico_id=sindico.id) }}" class="row">
+    <div class="field" style="flex:1;">
+      <label>Nome</label>
+      <input type="text" name="nome" required>
+    </div>
+
+    <div class="field" style="flex:1;">
+      <label>CNPJ</label>
+      <input type="text" name="cnpj" placeholder="00.000.000/0000-00">
+    </div>
+
+    <div class="field" style="flex:1.4;">
+      <label>Endereço</label>
+      <input type="text" name="endereco" placeholder="Rua, número, bairro...">
+    </div>
+
+    <div class="field" style="align-self:flex-end;">
+      <button type="submit" class="btn" style="min-width:140px;">Salvar</button>
+    </div>
+  </form>
+</div>
+
+<a href="{{ url_for('dashboard') }}">← Voltar</a>
+
+{% endblock %}

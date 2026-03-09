@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Editar condomínio{% endblock %}
+
+{% block content %}
+
+<h1>Editar condomínio</h1>
+<p class="muted">Atualize os dados do condomínio.</p>
+
+<div class="card">
+  <form method="POST" class="row">
+    <div class="field" style="flex:1;">
+      <label>Nome</label>
+      <input type="text" name="nome" value="{{ condominio.nome }}" required>
+    </div>
+
+    <div class="field" style="flex:1;">
+      <label>CNPJ</label>
+      <input type="text" name="cnpj" value="{{ condominio.cnpj or '' }}">
+    </div>
+
+    <div class="field" style="flex:1.4;">
+      <label>Endereço</label>
+      <input type="text" name="endereco" value="{{ condominio.endereco or '' }}">
+    </div>
+
+    <div class="field" style="align-self:flex-end;">
+      <button type="submit" class="btn" style="min-width:140px;">Salvar</button>
+    </div>
+  </form>
+</div>
+
+<a href="{{ url_for('ver_sindico', id=condominio.sindico_id) }}">← Voltar</a>
+
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Executar manutenção{% endblock %}
+
+{% block content %}
+
+<h1>Executar manutenção</h1>
+<p class="muted">Registre a execução e atualize o próximo vencimento automaticamente.</p>
+
+<div class="card">
+  <h2>{{ m.descricao }}</h2>
+
+  <div class="row">
+    <div class="field">
+      <label>Condomínio</label>
+      <div>{{ m.condominio.nome }}</div>
+    </div>
+
+    <div class="field">
+      <label>Último vencimento</label>
+      <div>{{ m.data_vencimento.strftime('%d/%m/%Y') if m.data_vencimento else '-' }}</div>
+    </div>
+
+    <div class="field">
+      <label>Status atual</label>
+      <div>
+        {% if m.status == "Vencida" %}
+          <span class="pill bad">Vencida</span>
+        {% elif m.status == "A vencer" %}
+          <span class="pill warn">A vencer</span>
+        {% else %}
+          <span class="pill ok">Em dia</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Registrar execução</h2>
+
+  <form method="POST" class="row">
+    <div class="field">
+      <label>Data da execução</label>
+      <input type="date" name="data_execucao" required>
+    </div>
+
+    <div class="field" style="flex:1;">
+      <label>Empresa</label>
+      <input type="text" name="empresa" value="{{ m.empresa_ultima or '' }}">
+    </div>
+
+    <div class="field">
+      <label>Telefone da empresa</label>
+      <input type="text" name="telefone_empresa" value="{{ m.telefone_empresa or '' }}">
+    </div>
+
+    <div class="field">
+      <label>Valor do serviço</label>
+      <input type="number"
+             step="0.01"
+             name="valor_servico"
+             value="{{ m.valor_servico if m.valor_servico is not none else '' }}">
+    </div>
+
+    <div class="field" style="flex:1.3;">
+      <label>Observação</label>
+      <textarea name="observacao" placeholder="Opcional"></textarea>
+    </div>
+
+    <div class="field" style="align-self:flex-end;">
+      <button type="submit" class="btn" style="min-width:160px;">Confirmar execução</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <a href="{{ url_for('ver_condominio', id=m.condominio_id) }}">← Voltar</a>
+</div>
+
+{% endblock %}

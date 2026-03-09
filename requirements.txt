@@ -1,0 +1,7 @@
+Flask
+Flask-SQLAlchemy
+python-dateutil
+SQLAlchemy
+reportlab
+gunicorn
+psycopg2-binary

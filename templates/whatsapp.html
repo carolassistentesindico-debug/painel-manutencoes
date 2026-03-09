@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Texto WhatsApp{% endblock %}
+{% block content %}
+
+<div class="row spaced">
+  <div>
+    <h1>Texto para WhatsApp</h1>
+    <div class="muted">Copie e cole no grupo</div>
+  </div>
+  <a class="btn secondary" href="{{ url_for('alertas') }}">Voltar</a>
+</div>
+
+<div class="card">
+  <textarea style="width:100%; min-height:320px; padding:12px; border:1px solid #e5e7eb; border-radius:12px;">{{ texto }}</textarea>
+</div>
+
+{% endblock %}

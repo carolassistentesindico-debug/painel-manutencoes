@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Assistente de Síndico{% endblock %}</title>
+
+  <style>
+    :root{
+      --bg:#F4EEED;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#7a7a7a;
+      --line:#e6d8d1;
+
+      --primary:#662D0F;
+      --primary-2:#4f200a;
+
+      --accent:#F4D4BD;
+      --soft:#F4EEED;
+
+      --ok-bg:#e6f4ea;
+      --ok:#0b6b2a;
+
+      --warn-bg:#fff2df;
+      --warn:#a15c00;
+
+      --bad-bg:#ffe8ea;
+      --bad:#b00020;
+
+      --radius:18px;
+      --shadow:0 6px 18px rgba(102,45,15,.08);
+      --shadow-sm:0 2px 8px rgba(102,45,15,.06);
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    html, body{
+      min-height:100%;
+    }
+
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .topbar{
+      background:var(--primary);
+      border-bottom:none;
+      box-shadow:0 4px 14px rgba(102,45,15,.18);
+    }
+
+    .topbar-inner{
+      max-width:1100px;
+      margin:auto;
+      padding:12px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      color:#fff;
+      text-decoration:none;
+    }
+
+    .brand:hover{
+      text-decoration:none;
+    }
+
+    .brand img{
+      height:100px;
+      width:auto;
+      display:block;
+      flex-shrink:0;
+    }
+
+    .brand-text{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+
+    .brand-text strong{
+      font-size:20px;
+      color:#fff;
+      line-height:1.1;
+    }
+
+    .brand-text small{
+      font-size:13px;
+      color:var(--accent);
+      margin-top:4px;
+      line-height:1.2;
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .container{
+      max-width:1100px;
+      margin:auto;
+      padding:26px 20px 40px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px;
+      margin-bottom:16px;
+      box-shadow:var(--shadow-sm);
+    }
+
+    h1{
+      margin:0 0 6px;
+      font-size:28px;
+      line-height:1.15;
+      color:#111827;
+    }
+
+    h2{
+      margin:0 0 12px;
+      font-size:18px;
+      line-height:1.2;
+      color:#111827;
+    }
+
+    .muted{
+      color:var(--muted);
+    }
+
+    .row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:flex-start;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:200px;
+    }
+
+    label{
+      font-size:12px;
+      color:#7b6d66;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+
+    input, select, textarea{
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      font:inherit;
+      color:var(--text);
+      width:100%;
+    }
+
+    textarea{
+      min-height:110px;
+      resize:vertical;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid transparent;
+      background:#662D0F;
+      color:#fff;
+      font-weight:600;
+      cursor:pointer;
+      text-decoration:none;
+      min-height:40px;
+      transition:.18s ease;
+    }
+
+    .btn:hover{
+      background:#4f200a;
+      text-decoration:none;
+    }
+
+    .btn.secondary{
+      background:#F4D4BD;
+      border-color:#E7C2A7;
+      color:#662D0F;
+    }
+
+    .btn.secondary:hover{
+      background:#edc8ad;
+    }
+
+    .btn-link{
+      background:#662D0F;
+      border:1px solid #662D0F;
+      color:#ffffff;
+      cursor:pointer;
+      font-weight:600;
+      padding:8px 14px;
+      border-radius:10px;
+      font-size:13px;
+    }
+
+    .btn-link:hover{
+      background:#4f200a;
+    }
+
+    .btn.small{
+      padding:6px 10px;
+      min-height:32px;
+      font-size:12px;
+      border-radius:10px;
+    }
+
+    .btn-arquivados{
+      background:#662D0F;
+      color:#fff;
+      border:1px solid #662D0F;
+      border-radius:12px;
+      padding:8px 14px;
+      font-weight:600;
+    }
+
+    .btn-arquivados:hover{
+      background:#4f200a;
+    }
+
+    .btn-alerta{
+      background:#662D0F;
+      color:white;
+      padding:10px 16px;
+      border-radius:12px;
+      text-decoration:none;
+      font-weight:600;
+      transition:.18s ease;
+    }
+
+    .btn-alerta:hover{
+      background:#4f200a;
+    }
+
+    a{
+      color:#8a3d14;
+      text-decoration:none;
+    }
+
+    a:hover{
+      text-decoration:underline;
+    }
+
+    
+    
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+      margin-top:16px;
+    }
+
+    .stat{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:16px;
+      box-shadow:var(--shadow-sm);
+    }
+
+    .stat .t{
+      font-size:12px;
+      color:#7b6d66;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+    }
+
+    .stat .n{
+      font-size:42px;
+      font-weight:900;
+      margin-top:8px;
+      line-height:1;
+      color:#111827;
+    }
+
+    .stat .s{
+      margin-top:8px;
+      font-size:14px;
+      color:#6b7280;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:30px;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      line-height:1.2;
+    }
+
+    .pill.ok{
+      background:var(--ok-bg);
+      color:var(--ok);
+    }
+
+    .pill.warn{
+      background:var(--warn-bg);
+      color:var(--warn);
+    }
+
+    .pill.bad{
+      background:var(--bad-bg);
+      color:var(--bad);
+    }
+
+    .pill.neutral{
+      background:#f3e8e1;
+      color:#7a3a16;
+    }
+
+    .table-wrap{
+      overflow-x:auto;
+    }
+
+    .dashboard-table,
+    .manut-table,
+    .alerta-table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:4px;
+    }
+
+    .dashboard-table th,
+    .manut-table th,
+    .alerta-table th{
+      text-align:left;
+      font-size:12px;
+      color:#7b6d66;
+      font-weight:800;
+      padding:12px 10px;
+      border-bottom:1px solid #ead9cf;
+      white-space:nowrap;
+    }
+
+    .dashboard-table td,
+    .manut-table td,
+    .alerta-table td{
+      padding:14px 10px;
+      border-bottom:1px solid #f3e7df;
+      vertical-align:middle;
+    }
+
+    .dashboard-table tr:hover,
+    .manut-table tr:hover,
+    .alerta-table tr:hover{
+      background:#fffaf7;
+    }
+
+    .dashboard-table .num-col,
+    .manut-table .num-col{
+      text-align:center;
+      width:80px;
+    }
+
+    .dashboard-table .acoes-col,
+    .alerta-table .acoes-col{
+      text-align:right;
+      width:210px;
+      white-space:nowrap;
+    }
+
+    .acoes{
+      display:flex;
+      gap:12px;
+      justify-content:flex-end;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .emoji-acao,
+    .emoji-acao-btn{
+      font-size:18px;
+      line-height:1;
+      text-decoration:none;
+      background:none;
+      border:none;
+      padding:0;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .emoji-acao:hover,
+    .emoji-acao-btn:hover{
+      transform:scale(1.08);
+      text-decoration:none;
+    }
+
+    .contato-texto{
+      color:#4b5563;
+    }
+
+    .card-title-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:8px;
+      flex-wrap:wrap;
+    }
+
+    .flash-wrap{
+      margin-bottom:16px;
+    }
+
+    .flash-wrap .pill{
+      margin-right:8px;
+      margin-bottom:8px;
+    }
+
+    .filters{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    .empresa-box{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .page-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .alerta-card{
+      background:#ffffff;
+      border:1px solid #ead9cf;
+      border-radius:20px;
+      padding:20px;
+      margin-bottom:18px;
+      box-shadow:0 4px 14px rgba(102,45,15,.06);
+    }
+
+    .alerta-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+      padding-bottom:12px;
+      border-bottom:1px solid #f0e3db;
+    }
+
+    .alerta-sindico{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    .alerta-sindico strong{
+      font-size:19px;
+      color:#662D0F;
+    }
+
+    .alerta-sindico .sub{
+      color:#7b6d66;
+      font-size:14px;
+    }
+
+    .alerta-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .alerta-status{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .alerta-status.vencida{
+      background:#ffe5e8;
+      color:#b42318;
+    }
+
+    .alerta-status.avencer{
+      background:#fff1dc;
+      color:#b36b00;
+    }
+
+    .alerta-empty{
+      padding:16px 0;
+      color:var(--muted);
+    }
+
+    .site-footer{
+      margin-top:40px;
+      padding:18px 15px 24px;
+      text-align:center;
+      font-size:13px;
+      color:#7b6d66;
+      border-top:1px solid var(--line);
+    }
+
+    .btn-whatsapp{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:#25D366;
+      color:#fff;
+      padding:6px 10px;
+      border-radius:18px;
+      text-decoration:none;
+      font-size:12px;
+      font-weight:600;
+      border:1px solid #25D366;
+    }
+
+    .btn-whatsapp:hover{
+      background:#1ebe5d;
+      text-decoration:none;
+    }
+
+    @media (max-width:860px){
+      .stats{
+        grid-template-columns:1fr;
+      }
+
+      .row{
+        flex-direction:column;
+      }
+
+      .topbar-inner{
+        padding:10px 14px;
+        flex-wrap:wrap;
+      }
+
+      .brand{
+        align-items:center;
+      }
+
+      .brand img{
+        height:50px;
+      }
+
+      .brand-text strong{
+        font-size:16px;
+      }
+
+      .brand-text small{
+        font-size:12px;
+      }
+
+      .dashboard-table .acoes-col,
+      .alerta-table .acoes-col{
+        width:auto;
+      }
+
+      .acoes{
+        justify-content:flex-start;
+      }
+
+      
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a href="{{ url_for('dashboard') }}" class="brand">
+
+        <img src="{{ url_for('static', filename='logo2.png') }}" alt="logo">
+
+        <div class="brand-text">
+          <strong>Assistente de Síndico</strong>
+          <small>Painel de síndicos, condomínios e manutenções</small>
+        </div>
+
+      </a>
+
+      <div class="top-actions">
+        <a class="btn secondary" href="{{ url_for('relatorios') }}">Relatórios</a>
+        <a class="btn secondary" href="{{ url_for('alertas') }}">Alertas</a>
+        <a class="btn secondary" href="{{ url_for('logout') }}">Sair</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-wrap">
+          {% for category, msg in messages %}
+            <span class="pill {% if category == 'success' %}ok{% elif category == 'warning' %}warn{% else %}bad{% endif %}">
+              {{ msg }}
+            </span>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <footer class="site-footer">
+    Sistema de Gestão Condominial
+    <br>
+    Desenvolvido por <strong>Caroline Piekazewicz - Assistente de Síndico</strong>
+  </footer>
+
+</body>
+</html>

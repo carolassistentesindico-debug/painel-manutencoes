@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<h1>Painel de Manutenções</h1>
+<p class="muted">Resumo geral e por síndico</p>
+
+<div class="stats">
+  <div class="stat">
+    <div class="t">Vencidas</div>
+    <div class="n">{{ vencidas }}</div>
+  </div>
+
+  <div class="stat">
+    <div class="t">A vencer</div>
+    <div class="n">{{ a_vencer }}</div>
+    <div class="s">Próximos 30 dias</div>
+  </div>
+
+  <div class="stat">
+    <div class="t">Em dia</div>
+    <div class="n">{{ em_dia }}</div>
+  </div>
+</div>
+
+<br>
+
+<div class="card">
+  <div class="card-title-row">
+    <h2>Síndicos</h2>
+  </div>
+
+  <div class="table-wrap">
+    <table class="dashboard-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Contato</th>
+          <th class="num-col">Total</th>
+          <th class="num-col">Vencidas</th>
+          <th class="num-col">A vencer</th>
+          <th class="num-col">Em dia</th>
+          <th class="acoes-col">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sindicos %}
+        <tr>
+          <td><strong>{{ s.nome }}</strong></td>
+          <td>
+            <span class="contato-texto">
+              {{ s.email or '-' }}
+              {% if s.telefone %} • {{ s.telefone }}{% endif %}
+            </span>
+          </td>
+          <td class="num-col">{{ s.total or 0 }}</td>
+          <td class="num-col"><span class="pill bad">{{ s.vencidas or 0 }}</span></td>
+          <td class="num-col"><span class="pill warn">{{ s.a_vencer or 0 }}</span></td>
+          <td class="num-col"><span class="pill ok">{{ s.em_dia or 0 }}</span></td>
+          <td class="acoes-col">
+            <div class="acoes">
+              <a class="emoji-acao"
+                href="{{ url_for('ver_sindico', id=s.sindico_id) }}"
+                title="Abrir síndico">🏢</a>
+
+              <form method="POST"
+                    action="{{ url_for('arquivar_sindico', id=s.sindico_id) }}"
+                    style="display:inline; margin:0;"
+                    onsubmit="return confirm('Deseja arquivar este síndico?');">
+                <button type="submit"
+                        class="emoji-acao-btn"
+                        title="Arquivar síndico">🗄️</button>
+              </form>
+
+              <form method="POST"
+                    action="{{ url_for('excluir_sindico', id=s.sindico_id) }}"
+                    style="display:inline; margin:0;"
+                    onsubmit="return confirm('Deseja excluir este síndico?');">
+                <button type="submit"
+                        class="emoji-acao-btn"
+                        title="Excluir síndico">🗑️</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+
+        {% if not sindicos %}
+        <tr>
+          <td colspan="7" style="text-align:center; color:#6b7280;">
+            Nenhum síndico cadastrado.
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Novo síndico</h2>
+
+  <form method="POST" action="{{ url_for('novo_sindico') }}" class="row">
+    <div class="field" style="flex:1;">
+      <label>Nome</label>
+      <input type="text" name="nome" required>
+    </div>
+
+    <div class="field" style="flex:1;">
+      <label>Email</label>
+      <input type="email" name="email">
+    </div>
+
+    <div class="field" style="flex:1;">
+      <label>Telefone</label>
+      <input type="text" name="telefone">
+    </div>
+
+    <div class="field" style="align-self:flex-end;">
+      <button type="submit" class="btn" style="min-width:140px;">Salvar</button>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

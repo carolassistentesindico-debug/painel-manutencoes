@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login - Assistente de Síndico</title>
+
+  <style>
+    *{
+      box-sizing:border-box;
+    }
+
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg, #F4EEED 0%, #efe2db 100%);
+      padding:24px;
+    }
+
+    .login-box{
+      width:100%;
+      max-width:430px;
+      background:#ffffff;
+      border:1px solid #ead9cf;
+      border-radius:26px;
+      padding:40px 34px;
+      box-shadow:0 14px 40px rgba(102,45,15,.12);
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .login-box::before{
+      content:"";
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:7px;
+      background:#662D0F;
+    }
+
+    .logo-login{
+      width:180px;
+      height:auto;
+      display:block;
+      margin:0 auto 22px auto;
+    }
+
+    h1{
+      margin:0 0 6px;
+      color:#662D0F;
+      font-size:30px;
+      line-height:1.1;
+    }
+
+    .sub{
+      margin:0 0 28px;
+      color:#7b6d66;
+      font-size:15px;
+    }
+
+    .erro{
+      background:#ffe8ea;
+      color:#b00020;
+      border:1px solid #f1b9c2;
+      padding:11px 12px;
+      border-radius:14px;
+      font-size:14px;
+      margin-bottom:16px;
+      text-align:left;
+    }
+
+    .field{
+      text-align:left;
+      margin-bottom:16px;
+    }
+
+    label{
+      display:block;
+      margin-bottom:7px;
+      font-size:12px;
+      font-weight:800;
+      color:#7b6d66;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+    }
+
+    input{
+      width:100%;
+      padding:13px 14px;
+      border:1px solid #e6d8d1;
+      border-radius:14px;
+      font-size:14px;
+      outline:none;
+      transition:.18s ease;
+    }
+
+    input:focus{
+      border-color:#c8a892;
+      box-shadow:0 0 0 4px rgba(102,45,15,.08);
+    }
+
+    .senha-box{
+      position:relative;
+    }
+
+    .toggle-senha{
+      margin-top:8px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:13px;
+      color:#7b6d66;
+      user-select:none;
+    }
+
+    .toggle-senha input{
+      width:auto;
+      margin:0;
+    }
+
+    button{
+      width:100%;
+      margin-top:14px;
+      padding:14px;
+      border:none;
+      border-radius:14px;
+      background:#662D0F;
+      color:#fff;
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    button:hover{
+      background:#4f200a;
+      transform:translateY(-1px);
+    }
+
+    .rodape{
+      margin-top:22px;
+      font-size:12px;
+      color:#8b6f5d;
+      line-height:1.4;
+    }
+
+    @media (max-width:520px){
+      .login-box{
+        padding:32px 22px;
+        border-radius:22px;
+      }
+
+      .logo-login{
+        width:150px;
+      }
+
+      h1{
+        font-size:26px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <img src="{{ url_for('static', filename='logo3.png') }}" alt="Logo" class="logo-login">
+
+    <h1>Assistente de Síndico</h1>
+    
+    <br>
+    <br>
+
+    {% if erro %}
+      <div class="erro">{{ erro }}</div>
+    {% endif %}
+
+    <form method="POST">
+      <div class="field">
+        <label>Usuário</label>
+        <input type="text" name="usuario" required>
+      </div>
+
+      <div class="field">
+        <label>Senha</label>
+        <div class="senha-box">
+          <input type="password" name="senha" id="senha" required>
+        </div>
+
+        <label class="toggle-senha">
+          <input type="checkbox" onclick="mostrarSenha()">
+          Mostrar senha
+        </label>
+      </div>
+
+      <button type="submit">Entrar</button>
+    </form>
+
+    <div class="rodape">
+      Sistema de Gestão Condominial
+      <br>
+      Desenvolvido por <strong>Caroline Piekazewicz - Assistente de Síndico</strong>
+    </div>
+  </div>
+
+  <script>
+    function mostrarSenha() {
+      const campo = document.getElementById("senha");
+      campo.type = campo.type === "password" ? "text" : "password";
+    }
+  </script>
+
+</body>
+</html>
