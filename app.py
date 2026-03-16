@@ -31,8 +31,14 @@ SENHA_ADMIN = os.getenv("ADMIN_PASSWORD", "carol089208")
 
 db = SQLAlchemy(app)
 
-with app.app_context():
-    db.create_all()
+_tabelas_criadas = False
+
+@app.before_request
+def criar_tabelas():
+    global _tabelas_criadas
+    if not _tabelas_criadas:
+        db.create_all()
+        _tabelas_criadas = True
 
 # =======================
 # MODELOS
