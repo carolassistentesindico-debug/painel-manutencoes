@@ -124,57 +124,12 @@ def logout():
 # DASHBOARD
 # =======================
 
-@app.route("/dashboard")
+@app.route('/dashboard')
 def dashboard():
+    if 'usuario' not in session:
+        return redirect(url_for('login'))
 
-    if "usuario_logado" not in session:
-        return redirect(url_for("login"))
-
-    hoje = date.today()
-    limite = hoje + timedelta(days=30)
-
-    sindicos = (
-        db.session.query(
-            Sindico.id.label("sindico_id"),
-            Sindico.nome.label("nome"),
-            Sindico.email.label("email"),
-            Sindico.telefone.label("telefone"),
-            func.count(Manutencao.id).label("total"),
-            func.sum(case((Manutencao.data_vencimento < hoje, 1), else_=0)).label("vencidas"),
-            func.sum(
-                case(
-                    (
-                        (Manutencao.data_vencimento >= hoje) &
-                        (Manutencao.data_vencimento <= limite),
-                        1
-                    ),
-                    else_=0
-                )
-            ).label("a_vencer"),
-            func.sum(case((Manutencao.data_vencimento > limite, 1), else_=0)).label("em_dia"),
-        )
-        .outerjoin(Condominio, Condominio.sindico_id == Sindico.id)
-        .outerjoin(Manutencao, Manutencao.condominio_id == Condominio.id)
-        .filter((Sindico.arquivado == 0) | (Sindico.arquivado.is_(None)))
-        .group_by(Sindico.id, Sindico.nome, Sindico.email, Sindico.telefone)
-        .order_by(
-            func.sum(case((Manutencao.data_vencimento < hoje, 1), else_=0)).desc(),
-            Sindico.nome.asc()
-        )
-        .all()
-    )
-
-    vencidas = sum((s.vencidas or 0) for s in sindicos)
-    a_vencer = sum((s.a_vencer or 0) for s in sindicos)
-    em_dia = sum((s.em_dia or 0) for s in sindicos)
-
-    return render_template(
-        "dashboard.html",
-        sindicos=sindicos,
-        vencidas=vencidas,
-        a_vencer=a_vencer,
-        em_dia=em_dia
-    )
+    return render_template("dashboard.html")
 
 # =======================
 # SÍNDICOS / CONDOMÍNIOS
