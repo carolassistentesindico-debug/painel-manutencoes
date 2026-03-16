@@ -612,7 +612,7 @@ def relatorio_historico_pdf():
         )
         .join(Manutencao, Manutencao.id == HistoricoManutencao.manutencao_id)
         .join(Condominio, Condominio.id == Manutencao.condominio_id)
-        .filter((Condominio.arquivado == 0) | (Condominio.arquivado.is_(None)))
+        .filter((Condominio.arquivado.is_(False)) | (Condominio.arquivado.is_(None)))
     )
 
     if condominio_id:
@@ -779,8 +779,8 @@ def relatorio_alertas_pdf():
         .join(Condominio, Condominio.id == Manutencao.condominio_id)
         .join(Sindico, Sindico.id == Condominio.sindico_id)
         .filter(
-            ((Sindico.arquivado == 0) | (Sindico.arquivado.is_(None))),
-            ((Condominio.arquivado == 0) | (Condominio.arquivado.is_(None)))
+            ((Sindico.arquivado.is_(False)) | (Sindico.arquivado.is_(None))),
+            ((Condominio.arquivado.is_(False)) | (Condominio.arquivado.is_(None)))
         )
     )
 
@@ -914,7 +914,7 @@ def relatorio_sindico_pdf(id):
         Condominio.query
         .filter(
             Condominio.sindico_id == id,
-            ((Condominio.arquivado == 0) | (Condominio.arquivado.is_(None)))
+            ((Condominio.arquivado.is_(False)) | (Condominio.arquivado.is_(None)))
         )
         .order_by(Condominio.nome.asc())
         .all()
@@ -1105,8 +1105,8 @@ def relatorios():
         db.session.query(Condominio)
         .join(Sindico, Sindico.id == Condominio.sindico_id)
         .filter(
-            ((Condominio.arquivado == 0) | (Condominio.arquivado.is_(None))),
-            ((Sindico.arquivado == 0) | (Sindico.arquivado.is_(None)))
+            ((Condominio.arquivado.is_(False)) | (Condominio.arquivado.is_(None))),
+            ((Sindico.arquivado.is_(False)) | (Sindico.arquivado.is_(None)))
         )
         .order_by(Condominio.nome.asc())
         .all()
@@ -1114,7 +1114,9 @@ def relatorios():
 
     sindicos = (
         Sindico.query
-        .filter((Sindico.arquivado == 0) | (Sindico.arquivado.is_(None)))
+        .filter(
+            (Sindico.arquivado.is_(False)) | (Sindico.arquivado.is_(None))
+        )
         .order_by(Sindico.nome.asc())
         .all()
     )
@@ -1134,7 +1136,7 @@ def api_manutencoes_por_condominio(condominio_id):
         Condominio.query
         .filter(
             Condominio.id == condominio_id,
-            ((Condominio.arquivado == 0) | (Condominio.arquivado.is_(None)))
+            .filter((Condominio.arquivado.is_(False)) | (Condominio.arquivado.is_(None)))
         )
         .first()
     )
