@@ -1136,7 +1136,7 @@ def api_manutencoes_por_condominio(condominio_id):
         Condominio.query
         .filter(
             Condominio.id == condominio_id,
-            .filter((Condominio.arquivado.is_(False)) | (Condominio.arquivado.is_(None)))
+            (Condominio.arquivado.is_(False)) | (Condominio.arquivado.is_(None))
         )
         .first()
     )
