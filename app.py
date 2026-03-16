@@ -124,12 +124,82 @@ def logout():
 # DASHBOARD
 # =======================
 
-@app.route('/dashboard')
+@app.route("/dashboard")
 def dashboard():
-    if 'usuario' not in session:
-        return redirect(url_for('login'))
+    if "usuario_logado" not in session:
+        return redirect(url_for("login"))
 
-    return render_template("dashboard.html")
+    hoje = date.today()
+    limite = hoje + timedelta(days=30)
+
+    vencidas_expr = func.coalesce(
+        func.sum(
+            case(
+                (Manutencao.data_vencimento < hoje, 1),
+                else_=0
+            )
+        ),
+        0
+    )
+
+    a_vencer_expr = func.coalesce(
+        func.sum(
+            case(
+                (
+                    (Manutencao.data_vencimento >= hoje) &
+                    (Manutencao.data_vencimento <= limite),
+                    1
+                ),
+                else_=0
+            )
+        ),
+        0
+    )
+
+    em_dia_expr = func.coalesce(
+        func.sum(
+            case(
+                (Manutencao.data_vencimento > limite, 1),
+                else_=0
+            )
+        ),
+        0
+    )
+
+    total_expr = func.count(Manutencao.id)
+
+    sindicos = (
+        db.session.query(
+            Sindico.id.label("sindico_id"),
+            Sindico.nome.label("nome"),
+            Sindico.email.label("email"),
+            Sindico.telefone.label("telefone"),
+            total_expr.label("total"),
+            vencidas_expr.label("vencidas"),
+            a_vencer_expr.label("a_vencer"),
+            em_dia_expr.label("em_dia"),
+        )
+        .outerjoin(Condominio, Condominio.sindico_id == Sindico.id)
+        .outerjoin(Manutencao, Manutencao.condominio_id == Condominio.id)
+        .filter(
+            (Sindico.arquivado.is_(False)) | (Sindico.arquivado.is_(None))
+        )
+        .group_by(Sindico.id, Sindico.nome, Sindico.email, Sindico.telefone)
+        .order_by(vencidas_expr.desc(), Sindico.nome.asc())
+        .all()
+    )
+
+    vencidas = sum(s.vencidas for s in sindicos)
+    a_vencer = sum(s.a_vencer for s in sindicos)
+    em_dia = sum(s.em_dia for s in sindicos)
+
+    return render_template(
+        "dashboard.html",
+        sindicos=sindicos,
+        vencidas=vencidas,
+        a_vencer=a_vencer,
+        em_dia=em_dia
+    )
 
 # =======================
 # SÍNDICOS / CONDOMÍNIOS
