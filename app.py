@@ -1156,6 +1156,174 @@ def api_manutencoes_por_condominio(condominio_id):
         "manutencoes": [m[0] for m in manutencoes if m[0]]
     }
 
+@app.route("/condominio/<int:id>/relatorio_pdf")
+def relatorio_condominio_pdf(id):
+    if "usuario_logado" not in session:
+        return redirect(url_for("login"))
+
+    condominio = (
+        Condominio.query
+        .filter(
+            Condominio.id == id,
+            (Condominio.arquivado.is_(False)) | (Condominio.arquivado.is_(None))
+        )
+        .first_or_404()
+    )
+
+    manutencoes = (
+        Manutencao.query
+        .filter(Manutencao.condominio_id == condominio.id)
+        .order_by(Manutencao.data_vencimento.asc())
+        .all()
+    )
+
+    response = make_response()
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = (
+        f"attachment; filename=relatorio_condominio_{condominio.nome}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    )
+
+    pdf = canvas.Canvas(response.stream, pagesize=A4)
+    largura, altura = A4
+
+    margem_esq = 35
+    margem_dir = largura - 35
+    y = altura - 40
+    hoje = date.today()
+
+    MARROM = (0.40, 0.18, 0.06)
+    BEGE = (0.96, 0.83, 0.74)
+    OFFWHITE = (0.96, 0.93, 0.93)
+    LINHA = (0.88, 0.82, 0.78)
+
+    def rodape():
+        pdf.setStrokeColorRGB(*LINHA)
+        pdf.line(margem_esq, 30, margem_dir, 30)
+        pdf.setFont("Helvetica", 8)
+        pdf.setFillColorRGB(0.45, 0.45, 0.45)
+        pdf.drawString(margem_esq, 18, "Desenvolvido por Caroline Piekazewicz - Assistente de Síndico")
+        pdf.drawRightString(margem_dir, 18, f"Página {pdf.getPageNumber()}")
+        pdf.setFillColorRGB(0, 0, 0)
+
+    def status_info(manutencao):
+        if manutencao.data_vencimento < hoje:
+            return {"texto": "Vencida", "bg": (1.00, 0.91, 0.92), "fg": (0.69, 0.00, 0.13)}
+        elif (manutencao.data_vencimento - hoje).days <= 30:
+            return {"texto": "A vencer", "bg": (1.00, 0.96, 0.90), "fg": (0.70, 0.42, 0.00)}
+        return {"texto": "Em dia", "bg": (0.92, 0.98, 0.94), "fg": (0.04, 0.42, 0.16)}
+
+    def desenhar_status(x, y_base, manutencao):
+        info = status_info(manutencao)
+        largura_box = 50
+        altura_box = 12
+
+        pdf.setFillColorRGB(*info["bg"])
+        pdf.setStrokeColorRGB(*info["bg"])
+        pdf.roundRect(x, y_base - 3, largura_box, altura_box, 6, fill=1, stroke=1)
+
+        pdf.setFillColorRGB(*info["fg"])
+        pdf.setFont("Helvetica-Bold", 7)
+        pdf.drawCentredString(x + largura_box / 2, y_base, info["texto"])
+        pdf.setFillColorRGB(0, 0, 0)
+
+    def cabecalho():
+        nonlocal y
+        pdf.setFillColorRGB(*MARROM)
+        pdf.rect(0, altura - 74, largura, 74, fill=1, stroke=0)
+
+        pdf.setFillColorRGB(1, 1, 1)
+        pdf.setFont("Helvetica-Bold", 18)
+        pdf.drawString(margem_esq, altura - 34, "Relatório de Manutenções por Condomínio")
+
+        pdf.setFont("Helvetica", 9)
+        pdf.drawString(margem_esq, altura - 54, f"Condomínio: {condominio.nome}")
+        pdf.drawRightString(margem_dir, altura - 54, f"Emitido em {hoje.strftime('%d/%m/%Y')}")
+
+        pdf.setFillColorRGB(0, 0, 0)
+        y = altura - 100
+
+    def bloco_condominio():
+        nonlocal y
+        pdf.setFillColorRGB(*OFFWHITE)
+        pdf.setStrokeColorRGB(*LINHA)
+        pdf.roundRect(margem_esq, y - 62, margem_dir - margem_esq, 62, 12, fill=1, stroke=1)
+
+        pdf.setFillColorRGB(*MARROM)
+        pdf.setFont("Helvetica-Bold", 10)
+        pdf.drawString(margem_esq + 12, y - 16, "DADOS DO CONDOMÍNIO")
+
+        pdf.setFillColorRGB(0, 0, 0)
+        pdf.setFont("Helvetica", 9)
+        pdf.drawString(margem_esq + 12, y - 32, f"Nome: {condominio.nome}")
+        pdf.drawString(margem_esq + 12, y - 46, f"Endereço: {condominio.endereco or '-'}")
+        pdf.drawString(margem_esq + 320, y - 32, f"CNPJ: {condominio.cnpj or '-'}")
+
+        y -= 80
+
+    def cabecalho_tabela():
+        nonlocal y
+        pdf.setFillColorRGB(*BEGE)
+        pdf.rect(35, y - 4, 525, 18, fill=1, stroke=0)
+
+        pdf.setFont("Helvetica-Bold", 8)
+        pdf.setFillColorRGB(*MARROM)
+        pdf.drawString(42, y, "Descrição")
+        pdf.drawString(205, y, "Empresa")
+        pdf.drawString(300, y, "Último serviço")
+        pdf.drawString(385, y, "Vencimento")
+        pdf.drawString(448, y, "Status")
+        pdf.drawRightString(548, y, "Valor")
+
+        pdf.setFillColorRGB(0, 0, 0)
+        y -= 18
+
+    def nova_pagina():
+        nonlocal y
+        rodape()
+        pdf.showPage()
+        cabecalho()
+        bloco_condominio()
+        cabecalho_tabela()
+
+    cabecalho()
+    bloco_condominio()
+    cabecalho_tabela()
+
+    if not manutencoes:
+        pdf.setFont("Helvetica", 10)
+        pdf.drawString(margem_esq, y, "Nenhuma manutenção cadastrada para este condomínio.")
+    else:
+        linha = 0
+        for m in manutencoes:
+            if y < 70:
+                nova_pagina()
+
+            descricao = m.descricao[:38]
+            empresa = (m.empresa_ultima or "-").title()[:18]
+            servico = m.data_inicio.strftime("%d/%m/%Y") if m.data_inicio else "-"
+            vencimento = m.data_vencimento.strftime("%d/%m/%Y") if m.data_vencimento else "-"
+            valor = f"R$ {m.valor_servico:.2f}" if m.valor_servico is not None else "-"
+
+            if linha % 2 == 0:
+                pdf.setFillColorRGB(0.995, 0.985, 0.98)
+                pdf.rect(35, y - 4, 525, 16, fill=1, stroke=0)
+                pdf.setFillColorRGB(0, 0, 0)
+
+            pdf.setFont("Helvetica", 8)
+            pdf.drawString(42, y, descricao)
+            pdf.drawString(205, y, empresa)
+            pdf.drawString(300, y, servico)
+            pdf.drawString(385, y, vencimento)
+            desenhar_status(448, y, m)
+            pdf.drawRightString(548, y, valor)
+
+            y -= 18
+            linha += 1
+
+    rodape()
+    pdf.save()
+    return response
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
