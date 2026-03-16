@@ -519,6 +519,7 @@ def historico_manutencao(manutencao_id):
 def alertas():
     if "usuario_logado" not in session:
         return redirect(url_for("login"))
+
     hoje = date.today()
     limite = hoje + timedelta(days=30)
 
@@ -532,14 +533,18 @@ def alertas():
         )
         .join(Condominio, Condominio.id == Manutencao.condominio_id)
         .join(Sindico, Sindico.id == Condominio.sindico_id)
-        .filter(Sindico.arquivado == 0)
         .filter(
-            or_(
-                Manutencao.data_vencimento < hoje,
-                Manutencao.data_vencimento <= limite
-            )
+            (Sindico.arquivado.is_(False)) | (Sindico.arquivado.is_(None)),
+            (Condominio.arquivado.is_(False)) | (Condominio.arquivado.is_(None))
         )
-        .order_by(Sindico.nome.asc(), Condominio.nome.asc(), Manutencao.data_vencimento.asc())
+        .filter(
+            Manutencao.data_vencimento <= limite
+        )
+        .order_by(
+            Sindico.nome.asc(),
+            Condominio.nome.asc(),
+            Manutencao.data_vencimento.asc()
+        )
         .all()
     )
 
@@ -595,9 +600,6 @@ def alertas():
         dados["texto"] = texto
 
     return render_template("alertas.html", alertas=alertas_dict)
-
-
-
 
 
 @app.route("/relatorios/historico_pdf")
