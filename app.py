@@ -31,6 +31,9 @@ SENHA_ADMIN = os.getenv("ADMIN_PASSWORD", "carol089208")
 
 db = SQLAlchemy(app)
 
+with app.app_context():
+    db.create_all()
+
 # =======================
 # MODELOS
 # =======================
