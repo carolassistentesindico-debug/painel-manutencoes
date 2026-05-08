@@ -8,6 +8,28 @@ from reportlab.pdfgen import canvas
 from urllib.parse import quote
 import os
 
+MANUTENCOES_PADRAO = [
+    "Vistoria Lâmpadas de Emergência",
+    "Revisão Interfone",
+    "Revisão Elétrica",
+    "Revisão Portão",
+    "Revisão Telhado",
+    "Caixa de Gordura",
+    "Porta Corta Fogo",
+    "Estanqueidade Hidrantes",
+    "GÁS - Estanqueidade Primária",
+    "GÁS - Estanqueidade Secundária",
+    "Recarga Extintores",
+    "Manutenção das Bombas",
+    "Seguro de Vida",
+    "Seguro Condominial",
+    "Dedetização / Desratização",
+    "Caixa D’água",
+    "Ar Condicionado",
+    "Laudo Bombeiros - AVCB",
+    "Para Raio",
+]
+
 app = Flask(__name__)
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -79,11 +101,17 @@ class Manutencao(db.Model):
 
     @property
     def status(self):
+        if not self.data_vencimento:
+            return "Sem vencimento"
+
         hoje = date.today()
+
         if self.data_vencimento < hoje:
             return "Vencida"
+
         if (self.data_vencimento - hoje).days <= 30:
             return "A vencer"
+
         return "Em dia"
 
 
@@ -281,6 +309,22 @@ def novo_condominio(sindico_id):
     )
 
     db.session.add(novo)
+    db.session.commit()
+
+    for descricao in MANUTENCOES_PADRAO:
+        manutencao = Manutencao(
+            condominio_id=novo.id,
+            descricao=descricao,
+            data_inicio=None,
+            duracao_meses=None,
+            data_vencimento=None,
+            empresa_ultima=None,
+            telefone_empresa=None,
+            valor_servico=None
+        )
+
+        db.session.add(manutencao)
+
     db.session.commit()
 
     return redirect(url_for("ver_sindico", id=sindico_id))
