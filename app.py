@@ -1332,6 +1332,96 @@ def relatorio_condominio_pdf(id):
     pdf.save()
     return response
 
+@app.route("/alertas_whatsapp")
+def alertas_whatsapp():
+    if "usuario_logado" not in session:
+        return redirect(url_for("login"))
+
+    hoje = date.today()
+    limite = hoje + timedelta(days=30)
+
+    alertas_por_telefone = {}
+
+    itens = (
+        db.session.query(
+            Manutencao,
+            Condominio.nome.label("condominio_nome"),
+            Sindico.nome.label("sindico_nome"),
+            Sindico.telefone.label("sindico_telefone"),
+        )
+        .join(Condominio, Condominio.id == Manutencao.condominio_id)
+        .join(Sindico, Sindico.id == Condominio.sindico_id)
+        .filter(Manutencao.data_vencimento <= limite)
+        .order_by(Sindico.nome.asc(), Condominio.nome.asc(), Manutencao.data_vencimento.asc())
+        .all()
+    )
+
+    for m, condominio_nome, sindico_nome, telefone in itens:
+        if not telefone:
+            continue
+
+        telefone_limpo = "".join(filter(str.isdigit, telefone))
+
+        if not telefone_limpo.startswith("55"):
+            telefone_limpo = "55" + telefone_limpo
+
+        if telefone_limpo not in alertas_por_telefone:
+            alertas_por_telefone[telefone_limpo] = {
+                "sindico_nome": sindico_nome,
+                "telefone": telefone_limpo,
+                "vencidas": [],
+                "vence_hoje": [],
+                "a_vencer": [],
+            }
+
+        if m.data_vencimento < hoje:
+            alertas_por_telefone[telefone_limpo]["vencidas"].append(
+                f"{condominio_nome} — {m.descricao} — venceu em {m.data_vencimento.strftime('%d/%m/%Y')}"
+            )
+        elif m.data_vencimento == hoje:
+            alertas_por_telefone[telefone_limpo]["vence_hoje"].append(
+                f"{condominio_nome} — {m.descricao} — vence HOJE"
+            )
+        else:
+            dias = (m.data_vencimento - hoje).days
+            alertas_por_telefone[telefone_limpo]["a_vencer"].append(
+                f"{condominio_nome} — {m.descricao} — vence em {dias} dias ({m.data_vencimento.strftime('%d/%m/%Y')})"
+            )
+
+    alertas = []
+
+    for telefone, dados in alertas_por_telefone.items():
+        mensagem = f"Olá, {dados['sindico_nome']}!\n\n"
+        mensagem += "Você possui manutenções que precisam de atenção:\n\n"
+
+        if dados["vencidas"]:
+            mensagem += "🚨 VENCIDAS\n"
+            for item in dados["vencidas"]:
+                mensagem += f"• {item}\n"
+            mensagem += "\n"
+
+        if dados["vence_hoje"]:
+            mensagem += "⚠️ VENCEM HOJE\n"
+            for item in dados["vence_hoje"]:
+                mensagem += f"• {item}\n"
+            mensagem += "\n"
+
+        if dados["a_vencer"]:
+            mensagem += "🔔 PRÓXIMAS DO VENCIMENTO\n"
+            for item in dados["a_vencer"]:
+                mensagem += f"• {item}\n"
+            mensagem += "\n"
+
+        mensagem += "Favor verificar a execução dessas manutenções."
+
+        dados["mensagem"] = mensagem
+        dados["link_whatsapp"] = f"https://wa.me/{telefone}?text={quote(mensagem)}"
+        dados["total"] = len(dados["vencidas"]) + len(dados["vence_hoje"]) + len(dados["a_vencer"])
+
+        alertas.append(dados)
+
+    return render_template("alertas_whatsapp.html", alertas=alertas)
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+    <h1>📲 Alertas WhatsApp</h1>
+
+    {% if alertas %}
+
+        <div class="cards-alertas">
+
+            {% for alerta in alertas %}
+
+            <div class="card-alerta">
+
+                <h2>{{ alerta.sindico_nome }}</h2>
+
+                <p>
+                    <strong>Telefone:</strong>
+                    {{ alerta.telefone }}
+                </p>
+
+                <p>
+                    <strong>Total de alertas:</strong>
+                    {{ alerta.total }}
+                </p>
+
+                {% if alerta.vencidas %}
+                    <div class="bloco-alerta vencidas">
+                        <h3>🚨 Vencidas</h3>
+
+                        <ul>
+                            {% for item in alerta.vencidas %}
+                                <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                {% if alerta.vence_hoje %}
+                    <div class="bloco-alerta hoje">
+                        <h3>⚠️ Vencem Hoje</h3>
+
+                        <ul>
+                            {% for item in alerta.vence_hoje %}
+                                <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                {% if alerta.a_vencer %}
+                    <div class="bloco-alerta vencer">
+                        <h3>🔔 Próximas do Vencimento</h3>
+
+                        <ul>
+                            {% for item in alerta.a_vencer %}
+                                <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <a
+                    href="{{ alerta.link_whatsapp }}"
+                    target="_blank"
+                    class="btn-whatsapp"
+                >
+                    📲 Enviar WhatsApp
+                </a>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <p>Nenhum alerta encontrado.</p>
+
+    {% endif %}
+</div>
+
+<style>
+
+.container {
+    padding: 20px;
+}
+
+.cards-alertas {
+    display: grid;
+    gap: 20px;
+}
+
+.card-alerta {
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.bloco-alerta {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 12px;
+}
+
+.vencidas {
+    background: #ffe5e5;
+}
+
+.hoje {
+    background: #fff4d6;
+}
+
+.vencer {
+    background: #e8f4ff;
+}
+
+.btn-whatsapp {
+    display: inline-block;
+    margin-top: 20px;
+    background: #25d366;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.btn-whatsapp:hover {
+    opacity: 0.9;
+}
+
+ul {
+    padding-left: 20px;
+}
+
+</style>
+
+{% endblock %}
