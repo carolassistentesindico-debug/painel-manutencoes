@@ -3,128 +3,183 @@
 
 {% block content %}
 
-<div class="page-head">
+<div class="page-head relatorios-head">
   <div>
-    <h1>Central de Relatórios</h1>
-    <p class="muted">Gere relatórios por histórico, vencimento, síndico ou condomínio.</p>
+    <h1>📄 Central de Relatórios</h1>
+    <p class="muted">
+      Gere PDFs organizados para acompanhar manutenções, vencimentos e históricos dos condomínios.
+    </p>
   </div>
 
-  <a href="{{ url_for('dashboard') }}" class="btn secondary">Voltar</a>
+  <a href="{{ url_for('dashboard') }}" class="btn secondary">← Voltar</a>
 </div>
 
-<div class="row">
+<div class="relatorios-grid">
 
-  <div class="card" style="flex:1; min-width:320px;">
-    <h2>Histórico de manutenções</h2>
-    <p class="muted">Selecione primeiro o condomínio, depois escolha a manutenção daquele condomínio.</p>
+  <!-- RELATÓRIO DE PENDÊNCIAS -->
+  <div class="relatorio-card destaque">
+    <div class="relatorio-icon">🚨</div>
 
-    <form method="GET" action="{{ url_for('relatorio_historico_pdf') }}" class="row">
-      <div class="field" style="flex:1;">
+    <div>
+      <h2>Manutenções pendentes</h2>
+      <p class="muted">
+        Ideal para acompanhar o que está vencido ou próximo do vencimento.
+      </p>
+    </div>
+
+    <form method="GET" action="{{ url_for('relatorio_alertas_pdf') }}" class="relatorio-form">
+      <div class="field full">
+        <label>Tipo de pendência</label>
+        <select name="tipo">
+          <option value="todos">Vencidas e próximas do vencimento</option>
+          <option value="vencidas">Somente vencidas</option>
+          <option value="a_vencer">Somente próximas do vencimento</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn full-btn">
+        Gerar PDF
+      </button>
+    </form>
+  </div>
+
+  <!-- RELATÓRIO POR CONDOMÍNIO -->
+  <div class="relatorio-card">
+    <div class="relatorio-icon">🏢</div>
+
+    <div>
+      <h2>Relatório por condomínio</h2>
+      <p class="muted">
+        Mostra todas as manutenções cadastradas de um condomínio específico.
+      </p>
+    </div>
+
+    <form method="GET" action="" onsubmit="event.preventDefault(); gerarRelatorioCondominio();" class="relatorio-form">
+      <div class="field full">
         <label>Condomínio</label>
-        <select name="condominio_id" id="historico_condominio" required onchange="carregarManutencoes()">
-          <option value="">Selecione</option>
+        <select id="condominio_id" required>
+          <option value="">Selecione o condomínio</option>
           {% for c in condominios %}
             <option value="{{ c.id }}">{{ c.nome }}</option>
           {% endfor %}
         </select>
       </div>
 
-      <div class="field" style="flex:1;">
-        <label>Manutenção</label>
-        <select name="servico" id="historico_servico">
-          <option value="">Selecione um condomínio primeiro</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Data inicial</label>
-        <input type="date" name="data_inicio">
-      </div>
-
-      <div class="field">
-        <label>Data final</label>
-        <input type="date" name="data_fim">
-      </div>
-
-      <div class="field" style="align-self:flex-end;">
-        <button type="submit" class="btn">Gerar PDF</button>
-      </div>
+      <button type="submit" class="btn full-btn">
+        Gerar PDF
+      </button>
     </form>
   </div>
 
-  <div class="card" style="flex:1; min-width:320px;">
-    <h2>Manutenções vencidas e a vencer</h2>
-    <p class="muted">Gere um relatório geral de pendências.</p>
+  <!-- RELATÓRIO POR SÍNDICO -->
+  <div class="relatorio-card">
+    <div class="relatorio-icon">👤</div>
 
-    <form method="GET" action="{{ url_for('relatorio_alertas_pdf') }}" class="row">
-      <div class="field">
-        <label>Período</label>
-        <select name="tipo">
-          <option value="todos">Vencidas e a vencer</option>
-          <option value="vencidas">Somente vencidas</option>
-          <option value="a_vencer">Somente a vencer</option>
-        </select>
-      </div>
+    <div>
+      <h2>Relatório por síndico</h2>
+      <p class="muted">
+        Reúne as manutenções de todos os condomínios vinculados ao síndico.
+      </p>
+    </div>
 
-      <div class="field" style="align-self:flex-end;">
-        <button type="submit" class="btn">Gerar PDF</button>
-      </div>
-    </form>
-  </div>
-
-</div>
-
-<div class="row">
-
-  <div class="card" style="flex:1; min-width:320px;">
-    <h2>Relatório por síndico</h2>
-    <p class="muted">Selecione um síndico e gere o relatório das manutenções.</p>
-
-    <form method="GET"
-          action=""
-          class="row"
-          onsubmit="event.preventDefault(); gerarRelatorioSindico();">
-      <div class="field" style="flex:1;">
+    <form method="GET" action="" onsubmit="event.preventDefault(); gerarRelatorioSindico();" class="relatorio-form">
+      <div class="field full">
         <label>Síndico</label>
         <select id="sindico_id" required>
-          <option value="">Selecione</option>
+          <option value="">Selecione o síndico</option>
           {% for s in sindicos %}
             <option value="{{ s.id }}">{{ s.nome }}</option>
           {% endfor %}
         </select>
       </div>
 
-      <div class="field" style="align-self:flex-end;">
-        <button type="submit" class="btn">Gerar PDF</button>
-      </div>
+      <button type="submit" class="btn full-btn">
+        Gerar PDF
+      </button>
     </form>
   </div>
 
-  <div class="card" style="flex:1; min-width:320px;">
-    <h2>Relatório por condomínio</h2>
-    <p class="muted">Selecione um condomínio e gere o relatório completo.</p>
-
-    <form method="GET"
-          action=""
-          class="row"
-          onsubmit="event.preventDefault(); gerarRelatorioCondominio();">
-      <div class="field" style="flex:1;">
-        <label>Condomínio</label>
-        <select id="condominio_id" required>
-          <option value="">Selecione</option>
-          {% for c in condominios %}
-            <option value="{{ c.id }}">{{ c.nome }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div class="field" style="align-self:flex-end;">
-        <button type="submit" class="btn">Gerar PDF</button>
-      </div>
-    </form>
-  </div>
+  
 
 </div>
+
+<style>
+  .relatorios-head {
+    margin-bottom: 20px;
+  }
+
+  .relatorios-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .relatorio-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .relatorio-card.destaque {
+    border: 1px solid #e7c2a7;
+    box-shadow: 0 8px 24px rgba(102,45,15,.10);
+  }
+
+  .relatorio-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 16px;
+    background: #F4D4BD;
+    color: #662D0F;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+
+  .relatorio-card h2 {
+    margin-bottom: 6px;
+    font-size: 20px;
+    color: #111827;
+  }
+
+  .relatorio-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 4px;
+  }
+
+  .field.full {
+    width: 100%;
+  }
+
+  .duas-colunas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .full-btn {
+    width: 100%;
+    margin-top: 2px;
+  }
+
+  @media (max-width: 860px) {
+    .relatorios-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .duas-colunas {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
 
 <script>
   async function carregarManutencoes() {
@@ -135,7 +190,7 @@
     servicoSelect.innerHTML = "";
 
     if (!condominioId) {
-      servicoSelect.innerHTML = '<option value="">Selecione um condomínio primeiro</option>';
+      servicoSelect.innerHTML = '<option value="">Todas as manutenções</option>';
       return;
     }
 
@@ -147,15 +202,14 @@
 
       servicoSelect.innerHTML = "";
 
-      if (!dados.manutencoes || dados.manutencoes.length === 0) {
-        servicoSelect.innerHTML = '<option value="">Nenhuma manutenção encontrada</option>';
-        return;
-      }
-
       const optTodas = document.createElement("option");
       optTodas.value = "";
-      optTodas.textContent = "Todas";
+      optTodas.textContent = "Todas as manutenções";
       servicoSelect.appendChild(optTodas);
+
+      if (!dados.manutencoes || dados.manutencoes.length === 0) {
+        return;
+      }
 
       dados.manutencoes.forEach(function(item) {
         const option = document.createElement("option");

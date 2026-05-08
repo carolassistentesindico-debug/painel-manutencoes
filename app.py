@@ -515,92 +515,6 @@ def historico_manutencao(manutencao_id):
 # ALERTAS
 # =======================
 
-@app.route("/alertas")
-def alertas():
-    if "usuario_logado" not in session:
-        return redirect(url_for("login"))
-
-    hoje = date.today()
-    limite = hoje + timedelta(days=30)
-
-    itens = (
-        db.session.query(
-            Manutencao,
-            Condominio.nome.label("condominio_nome"),
-            Sindico.nome.label("sindico_nome"),
-            Sindico.telefone.label("sindico_telefone"),
-            Condominio.id.label("condominio_id"),
-        )
-        .join(Condominio, Condominio.id == Manutencao.condominio_id)
-        .join(Sindico, Sindico.id == Condominio.sindico_id)
-        .filter(
-            (Sindico.arquivado.is_(False)) | (Sindico.arquivado.is_(None)),
-            (Condominio.arquivado.is_(False)) | (Condominio.arquivado.is_(None))
-        )
-        .filter(
-            Manutencao.data_vencimento <= limite
-        )
-        .order_by(
-            Sindico.nome.asc(),
-            Condominio.nome.asc(),
-            Manutencao.data_vencimento.asc()
-        )
-        .all()
-    )
-
-    alertas_dict = {}
-
-    for m, cond_nome, sind_nome, sindico_telefone, cond_id in itens:
-        if sind_nome not in alertas_dict:
-            alertas_dict[sind_nome] = {
-                "telefone": sindico_telefone,
-                "itens": []
-            }
-
-        if m.data_vencimento < hoje:
-            dias = (hoje - m.data_vencimento).days
-            status = "vencida"
-        else:
-            dias = (m.data_vencimento - hoje).days
-            status = "a_vencer"
-
-        alertas_dict[sind_nome]["itens"].append({
-            "descricao": m.descricao,
-            "condominio": cond_nome,
-            "condominio_id": cond_id,
-            "data": m.data_vencimento,
-            "dias": dias,
-            "status": status
-        })
-
-    for sindico, dados in alertas_dict.items():
-        linhas = []
-        linhas.append(f"*📌 Alertas de manutenção (até {limite.strftime('%d/%m/%Y')})*")
-        linhas.append("")
-
-        if dados["itens"]:
-            condominio = dados["itens"][0]["condominio"]
-            linhas.append(f"*🏢 {sindico} — {condominio}*")
-            linhas.append("")
-
-        for i in dados["itens"]:
-            status = "🔴 Vencida" if i["status"] == "vencida" else "🟡 A vencer"
-            linhas.append(f"* {i['descricao']} — vence {i['data'].strftime('%d/%m/%Y')} ({status})")
-
-        texto = "\n".join(linhas)
-        telefone = "".join(ch for ch in (dados["telefone"] or "") if ch.isdigit())
-
-        if telefone:
-            if not telefone.startswith("55"):
-                telefone = "55" + telefone
-            dados["whatsapp_url"] = f"https://wa.me/{telefone}?text={quote(texto)}"
-        else:
-            dados["whatsapp_url"] = None
-
-        dados["texto"] = texto
-
-    return render_template("alertas.html", alertas=alertas_dict)
-
 
 @app.route("/relatorios/historico_pdf")
 def relatorio_historico_pdf():
@@ -1352,6 +1266,8 @@ def alertas_whatsapp():
         .join(Condominio, Condominio.id == Manutencao.condominio_id)
         .join(Sindico, Sindico.id == Condominio.sindico_id)
         .filter(Manutencao.data_vencimento <= limite)
+        .filter(Sindico.arquivado == False)
+        .filter(Condominio.arquivado == False)
         .order_by(Sindico.nome.asc(), Condominio.nome.asc(), Manutencao.data_vencimento.asc())
         .all()
     )

@@ -3,18 +3,36 @@
 
 {% block content %}
 
-<h1>Histórico da manutenção</h1>
-<p class="muted">{{ m.descricao }} — {{ m.condominio.nome }}</p>
+<div class="page-head">
+  <div>
+    <h1>🕘 Histórico da manutenção</h1>
+    <p class="muted">
+      {{ m.descricao }} — {{ m.condominio.nome }}
+    </p>
+  </div>
+
+  <a
+    href="{{ url_for('relatorio_historico_pdf', condominio_id=m.condominio_id, servico=m.descricao) }}"
+    class="btn secondary"
+    target="_blank"
+  >
+    📄 Baixar PDF
+  </a>
+</div>
 
 <div class="card">
   <div class="row">
+
     <div class="field">
       <label>Status atual</label>
+
       <div>
         {% if m.status == "Vencida" %}
           <span class="pill bad">Vencida</span>
+
         {% elif m.status == "A vencer" %}
           <span class="pill warn">A vencer</span>
+
         {% else %}
           <span class="pill ok">Em dia</span>
         {% endif %}
@@ -33,19 +51,32 @@
 
     <div class="field">
       <label>Próximo vencimento</label>
-      <div>{{ m.data_vencimento.strftime('%d/%m/%Y') if m.data_vencimento else '-' }}</div>
+
+      <div>
+        {{ m.data_vencimento.strftime('%d/%m/%Y') if m.data_vencimento else '-' }}
+      </div>
     </div>
+
   </div>
 </div>
 
 <div class="card">
-  <h2>Execuções registradas</h2>
+
+  <div class="card-title-row">
+    <h2>📋 Execuções registradas</h2>
+
+    <span class="pill neutral">
+      {{ historicos|length }} registro(s)
+    </span>
+  </div>
 
   <div class="table-wrap">
+
     <table class="manut-table">
+
       <thead>
         <tr>
-          <th>Data da execução</th>
+          <th>Data</th>
           <th>Empresa</th>
           <th>Telefone</th>
           <th>Valor</th>
@@ -54,11 +85,22 @@
       </thead>
 
       <tbody>
+
         {% for h in historicos %}
         <tr>
-          <td>{{ h.data_execucao.strftime('%d/%m/%Y') if h.data_execucao else '-' }}</td>
-          <td>{{ h.empresa or '-' }}</td>
-          <td>{{ h.telefone_empresa or '-' }}</td>
+
+          <td>
+            {{ h.data_execucao.strftime('%d/%m/%Y') if h.data_execucao else '-' }}
+          </td>
+
+          <td>
+            {{ h.empresa or '-' }}
+          </td>
+
+          <td>
+            {{ h.telefone_empresa or '-' }}
+          </td>
+
           <td>
             {% if h.valor_servico is not none %}
               R$ {{ '%.2f'|format(h.valor_servico) }}
@@ -66,23 +108,34 @@
               -
             {% endif %}
           </td>
-          <td>{{ h.observacao or '-' }}</td>
+
+          <td>
+            {{ h.observacao or '-' }}
+          </td>
+
         </tr>
         {% endfor %}
 
         {% if not historicos %}
         <tr>
-          <td colspan="5" style="text-align:center; color:#6b7280;">
+          <td colspan="5" style="text-align:center; color:#6b7280; padding:30px;">
             Nenhuma execução registrada.
           </td>
         </tr>
         {% endif %}
+
       </tbody>
+
     </table>
+
   </div>
 
-  <br>
-  <a href="{{ url_for('ver_condominio', id=m.condominio_id) }}">← Voltar</a>
+  <div style="margin-top:20px;">
+    <a href="{{ url_for('ver_condominio', id=m.condominio_id) }}" class="btn secondary">
+      ← Voltar
+    </a>
+  </div>
+
 </div>
 
 {% endblock %}
