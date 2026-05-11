@@ -66,7 +66,7 @@ def verificar_alertas_email():
             vence_hoje = [a["linha"] for a in alertas if a["status"] == "vence_hoje"]
             a_vencer = [a["linha"] for a in alertas if a["status"] == "a_vencer"]
 
-            assunto = "Alerta de manutenções pendentes"
+            assunto = "Alerta de Manutenções Pendentes"
 
             mensagem = f"Olá, {sindico_nome}!\n\n"
             mensagem += "Você possui manutenções que precisam de atenção:\n\n"
